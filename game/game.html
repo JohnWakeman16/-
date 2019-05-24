@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>小游戏</title>
+</head>
+<style type="text/css">
+html, body {
+  padding: 0;
+  margin: 0;
+}
+
+.container {
+  width: 400px;
+  height: 600px;
+  border: solid 1px black;
+  margin: auto;
+  position: relative;
+  margin-top: 50px;
+}
+
+.gameArea {
+  width: 100%;
+  height: 600px;
+  overflow: hidden;
+}
+
+.gameArea .go {
+  width: 100%;
+  height: 600px;
+  position: relative;
+  top: -150px;  
+  z-index: -1; 
+}
+
+.count {
+  position: absolute;
+  width: 100%;
+  height: 60px;
+  top: 100%;
+  left: -1px;
+  border-style: solid;
+  border-width: 0 1px 1px 1px;
+  line-height: 60px;
+  text-align: center;
+  line-height: 60px;
+  font-size: 30px;
+}
+
+.go > div > div {
+  width: 99px;
+  height: 149px;
+  border-right: solid 1px black;
+  border-bottom: solid 1px black;
+  display: inline-block;
+  float: left;
+  cursor: pointer;
+}
+
+.startGame {
+  position: relative;
+  margin: auto;
+  text-align: center;
+  font-size: 40px;
+  font-weight: bolder;
+  padding-top: 10px;
+  /*background-color: */
+}
+
+.startGame #start {
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: solid 1px black;
+}
+</style>
+<body>
+<div class="container">
+  <div class="gameArea">
+    <div class="startGame">
+        <span id="start">开始游戏</span>
+      </div> 
+ 		<div class="go">
+    </div>
+ 	</div>
+ 	<div class="count"></div>
+</div>
+<script type="text/javascript">
+const go = document.getElementsByClassName('go')[0];
+const start = document.getElementById('start');
+const colors = ['#1AAB8A', '#E15650', 'green', 'Dodgerblue'];
+const count = document.getElementsByClassName('count')[0];
+function createDiv() {
+  let div = document.createElement('div');
+  let index = Math.floor(Math.random() * 4);
+  // 填充行元素
+  for(let i = 0; i < 4; i++) {
+    let oDiv = document.createElement('div');
+    div.appendChild(oDiv);
+  }
+  // 判断go中是否还有元素
+  if(go.children.length !== 0) {
+    go.insertBefore(div, go.children[0]);
+  } else {
+    go.appendChild(div);
+  }
+  div.children[index].style.backgroundColor = colors[index];
+  div.children[index].className = 'done';
+}
+function move(obj) {
+  let speed = 5,
+      num = 0,
+      done = 1;  
+  obj.timer = setInterval(function() {
+    let step = parseInt(getComputedStyle(obj, null)['top']);
+    obj.style.top = step + speed + 'px';
+    if(parseInt(getComputedStyle(obj, null)['top']) >= 0) {
+      obj.style.top = -150 + 'px';
+      createDiv();
+    } 
+    if(obj.children.length === 6) {
+      for(let i = 0; i < 4; i++) {
+        // 颜色方块触底时 游戏结束 
+        if(obj.children[obj.children.length - 1].children[i].className == 'done') {
+          obj.style.top = -150 + 'px';
+          clearInterval(obj.timer);
+          count.innerHTML = '游戏结束，得分为：' + num;
+          start.parentNode.style.display = 'block';
+          start.innerText = '重新开始';
+        }
+      }
+      obj.removeChild(obj.children[obj.children.length - 1]);
+    }
+    obj.onmousedown = function(ev) {
+      ev = ev || window.event;
+      // 判断点击方块类名
+      if((ev.target ? ev.target : ev.srcElement).className === 'done') {
+        (ev.target ? ev.target : ev.srcElement).style.backgroundColor = '#aaadbb';
+        (ev.target ? ev.target : ev.srcElement).className = '';
+        num += done;
+        count.innerText = '当前得分：' + num;
+      } else {
+        obj.style.top = 0;
+        count.innerText = '游戏结束，得分为：' + num;
+        clearInterval(obj.timer);
+        start.parentNode.style.display = 'block';
+        start.innerText = '重新开始';
+        obj.style.zIndex = '-1';
+      }
+      if(num % 10 === 0) {
+        speed ++;
+        done ++;
+      }
+    }  
+  }, 20);
+}
+start.onclick = function() {
+  if(go.children.length) {
+    go.innerHTML = '';
+  }
+  this.parentNode.style.display = 'none';
+  go.style.zIndex = '1';
+  count.innerText = '';
+  move(go);
+}
+
+</script>
+</body>
+</html>
